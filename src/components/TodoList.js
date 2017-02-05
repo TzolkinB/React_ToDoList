@@ -4,13 +4,16 @@ import {TodoItem} from './TodoItem';
 export const TodoList = (props) => {
 	return (
 		<div className="todo-list">
-	        <ul>
-	          {props.todos.map(todo => 
-	          	<TodoItem key={todo.id} {...todo}/>
-	          	// same as <TodoItem id={todo.id} name={todo.name} />
-	            )}
-	        </ul>
-	      </div>
+      <ul>
+        {props.todos.map(todo => 
+        	<TodoItem 
+        	handleToggle={props.handleToggle}
+        	handleRemove={props.handleRemove}
+        	key={todo.id} {...todo}/>
+        	// same as <TodoItem id={todo.id} name={todo.name} />
+          )}
+      </ul>
+    </div>
 	)
 }
 

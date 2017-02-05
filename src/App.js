@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import logo                 from './logo.svg';
 import './App.css';
-import {TodoForm} from './components/TodoForm';
-import {TodoList} from './components/TodoList';
-import {addTodo, generateId} from './lib/todoHelpers'
+import {TodoForm}           from './components/TodoForm';
+import {TodoList}           from './components/TodoList';
+import {
+  addTodo, generateId, findById,
+  toggleTodo, updateTodo, removeTodo
+} from './lib/todoHelpers'
 
 class App extends Component {
   constructor() {
@@ -19,6 +22,23 @@ class App extends Component {
     this.handleInputChange = this.handleInputChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleEmptySubmit = this.handleEmptySubmit.bind(this)
+  }
+
+  handleToggle = (id) => {
+  // why does handleToggle(id) {} get todos of undefined for line 29?
+    const todo = findById(id, this.state.todos)
+    const toggled = toggleTodo(todo)
+    const updatedTodos = updateTodo(this.state.todos, toggled)
+    this.setState({
+      todos: updatedTodos
+    })
+  }
+
+  handleRemove = (id, e) => {
+    const updatedTodos = removeTodo(this.state.todos, id)
+    this.setState({
+      todos: updatedTodos
+    })
   }
 
   handleInputChange(e) {
@@ -60,7 +80,10 @@ class App extends Component {
             handleInputChange={this.handleInputChange} 
             handleSubmit={submitHandler}
             currentTodo={this.state.currentTodo}/>
-          <TodoList todos={this.state.todos}/>
+          <TodoList 
+            handleToggle={this.handleToggle} 
+            handleRemove={this.handleRemove} 
+            todos={this.state.todos}/>
         </div>
       </div>
     );
