@@ -3,25 +3,36 @@ import logo                 from './logo.svg';
 import './App.css';
 import {TodoForm}           from './components/TodoForm';
 import {TodoList}           from './components/TodoList';
+import {Footer}             from './components/Footer';
+import {
+  loadTodos, createTodo, saveTodo,
+  destroyTodo
+} from './lib/todoService';
 import {
   addTodo, generateId, findById,
-  toggleTodo, updateTodo, removeTodo
+  toggleTodo, updateTodo, removeTodo,
+  filterTodos
 } from './lib/todoHelpers'
+
 
 class App extends Component {
   constructor() {
     super()
     this.state = {
-      todos: [
-      {id: 1, name:"one", isComplete: false},
-      {id: 2, name:"two", isComplete: false},
-
-      ],
+      todos: [],
       currentTodo: ''
     }
     this.handleInputChange = this.handleInputChange.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.handleEmptySubmit = this.handleEmptySubmit.bind(this)
+  }
+
+  static contextTypes = {
+    route: React.PropTypes.string
+  }
+
+  componentDidMount() {
+    loadTodos().then(todos => this.setState({todos}))
   }
 
   handleToggle = (id) => {
@@ -32,13 +43,18 @@ class App extends Component {
     this.setState({
       todos: updatedTodos
     })
+    saveTodo(toggled)
+      .then(() => this.showMessage('Todo Updated'))
   }
 
   handleRemove = (id, e) => {
+    e.preventDefault()
     const updatedTodos = removeTodo(this.state.todos, id)
     this.setState({
       todos: updatedTodos
     })
+    destroyTodo(id)
+      .then(() => this.showMessage('Todo Removed'))
   }
 
   handleInputChange(e) {
@@ -57,6 +73,8 @@ class App extends Component {
       currentTodo: '',
       errorMessage: ''
     })
+    createTodo(newTodo)
+      .then(() => this.showMessage('Todo added'))
   }
 
   handleEmptySubmit(e) {
@@ -66,8 +84,14 @@ class App extends Component {
     })
   }
 
+  showMessage = (msg) => {
+    this.setState({message: msg})
+    setTimeout(() => this.setState({message: ''}), 2500)
+  }
+
   render() {
     const submitHandler = this.state.currentTodo ? this.handleSubmit : this.handleEmptySubmit
+    const displayTodos = filterTodos(this.state.todos, this.context.route)
     return (
       <div className="App">
         <div className="App-header">
@@ -76,6 +100,7 @@ class App extends Component {
         </div>
         <div className="todo-app">
           {this.state.errorMessage && <span className="error">{this.state.errorMessage}</span>}
+          {this.state.message && <span className="success">{this.state.message}</span>}
           <TodoForm 
             handleInputChange={this.handleInputChange} 
             handleSubmit={submitHandler}
@@ -83,7 +108,8 @@ class App extends Component {
           <TodoList 
             handleToggle={this.handleToggle} 
             handleRemove={this.handleRemove} 
-            todos={this.state.todos}/>
+            todos={displayTodos}/>
+          <Footer />
         </div>
       </div>
     );
